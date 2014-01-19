@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="iHome" default="deploy-tomcat" basedir="." xmlns:artifact="urn:maven-artifact-ant">
+
+	<property name="work.main" value="${basedir}/src/main" />
+	<property name="work.src" value="${work.main}/java" />
+	<property name="work.resource" value="${work.main}/resources" />
+	<property name="work.webapp" value="${work.main}/webapp" />
+	<property name="work.lib" value="${work.webapp}/WEB-INF/lib" />
+	<property name="work.webapp.webinf" value="${work.webapp}/WEB-INF" />
+
+	<property name="work.target" value="${basedir}/target" />
+	<property name="work.classes" value="${work.target}/classes" />
+	
+	<property name="tomcat.home" value="E:\apache-tomcat" />
+	
+	<property name="local.webapp.root" value="${tomcat.home}/webapps/iHome" />
+	<property name="local.webapp.webinf" value="${local.webapp.root}/WEB-INF" />
+	<property name="local.webapp.classes" value="${local.webapp.webinf}/classes" />
+	<property name="local.webapp.lib" value="${local.webapp.webinf}/lib" />
+
+	<path id="poject.class.path.bk">
+		<fileset dir="${work.lib}" />
+		<fileset refId="iHome.lib" />
+	</path>
+
+	<path id="poject.class.path">
+		<fileset refId="iHome.lib" />
+	</path>
+
+
+
+	<target name="mvn.dependencies" description="Use Maven2 to manage jars' dependencies">
+		<path id="mvn-ant-task" path="${work.lib}/maven-ant-tasks-2.1.3.jar" />
+		<typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="urn:maven-artifact-ant" classpathref="mvn-ant-task" />
+		<artifact:pom file="pom.xml" id="iHome.pom" />
+		<artifact:dependencies filesetId="iHome.lib">
+			<pom refid="iHome.pom" />
+		</artifact:dependencies>
+	</target>
+
+	<target name="compile" depends="mvn.dependencies">
+		<javac destdir="${work.classes}" includeantruntime="on">
+			<src>
+				<pathelement location="${work.main}/java" />
+			</src>
+			<classpath>
+				<path refid="project.class.path">
+				</path>
+			</classpath>
+		</javac>
+	</target>
+
+	<target name="copy-jsp">
+		<copy todir="${local.webapp.root}">
+			<fileset dir="${work.webapp}" />
+		</copy>
+	</target>
+
+	<target name="copy-lib" depends="mvn.dependencies">
+		<copy todir="${local.webapp.lib}">
+			<fileset refid="iHome.lib" />
+			<mapper type="flatten" />
+		</copy>
+
+		<copy todir="${local.webapp.lib}">
+			<fileset dir="${work.lib}" />
+		</copy>
+
+		<delete file="${local.webapp.lib}/servlet-api-2.4.jar" />
+		<delete file="${local.webapp.lib}/jsp-api-2.2.jar" />
+	</target>
+
+	<target name="copy-class" depends="compile">
+		<copy todir="${local.webapp.classes}">
+			<fileset dir="${work.classes}">
+				<include name="**/*.class" />
+				<exclude name="**/Test*.class" />
+			</fileset>
+		</copy>
+	</target>
+
+
+	<target name="copy-cfg">
+		<copy todir="${local.webapp.classes}">
+			<fileset dir="${work.resource}">
+				<include name="**/*.xml" />
+				<include name="**/*.vm" />
+				<include name="**/*properties" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="clean">
+		<delete dir="${local.webapp.root}" />
+	</target>
+
+	<target name="deploy-tomcat" depends="clean,copy-class, copy-cfg, copy-jsp, copy-lib">
+	</target>
+
+</project>

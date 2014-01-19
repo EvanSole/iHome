@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper  
+PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"  
+"http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<mapper namespace="com.website.system.dao.RoleMapper">
+	<resultMap id="roleMap" type="com.website.system.model.Role">
+		<result property="id" column="id" javaType="string" jdbcType="VARCHAR" ></result>
+		<result property="roleName" column="roleName"></result>
+	</resultMap>
+</mapper>
